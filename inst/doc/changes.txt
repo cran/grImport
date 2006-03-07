@@ -1,3 +1,10 @@
+Changes from version 0.2-3 to 0.2-4
+===================================
+
+1.  Fix to PostScriptTrace() so that full file paths work on Windows.
+
+    Thanks to Duncan Murdoch and Alex Hanke for bug reports.
+
 
 Changes from version 0.2-2 to 0.2-3
 ===================================

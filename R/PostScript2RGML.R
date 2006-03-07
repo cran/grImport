@@ -289,7 +289,10 @@ PostScriptTrace <- function(file, outfilename, charpath=TRUE) {
     psfilename <- paste("capture", basename(file), sep="")
     psfile <- file(psfilename, "w")
     writeLines(PScaptureHead(charpath), psfile)
-    writeLines(paste("(", file, ") run", sep=""), psfile)
+    # Reconstitute file name here to handle Windows-style paths
+    # in the file name
+    writeLines(paste("(", file.path(dirname(file), basename(file)),
+                     ") run", sep=""), psfile)
     writeLines(PScaptureFoot, psfile)
     close(psfile)
 
