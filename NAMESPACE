@@ -1,4 +1,6 @@
 
+import(methods, grid, XML)
+
 exportClasses("Picture")
 exportClasses("PictureOp")
 exportClasses("PictureStroke")
