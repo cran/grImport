@@ -1,5 +1,5 @@
 Package:      grImport
-Version:      0.2-2
+Version:      0.2-3
 Depends:      R (>= 2.3.0), methods, grid, XML
 SystemRequirements: ghostscript
 Date:         2006-03-07
@@ -9,4 +9,4 @@ Maintainer:   Paul Murrell <p.murrell@auckland.ac.nz>
 Description:  Functions for converting, importing, and drawing PostScript 
               pictures in R plots.
 License:      GPL version 2 or newer
-Packaged: Fri Dec 15 08:43:44 2006; paul
+Packaged: Mon Apr  9 08:34:21 2007; paul

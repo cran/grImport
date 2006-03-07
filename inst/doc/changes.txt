@@ -1,4 +1,11 @@
 
+Changes from version 0.2-2 to 0.2-3
+===================================
+
+1.  Fix to explodePaths() so that it handles paths that do not
+    need exploding.
+
+
 Changes from version 0.1 to 0.2
 =================================
 

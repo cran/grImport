@@ -29,26 +29,30 @@ explodePath <- function(path, fill) {
     if (length(ops) > 1) {
         moves <- grep("move", ops)
         npaths <- length(moves)
-        newpaths <- vector("list", npaths)
-        for (i in 1:(npaths - 1)) {
-            index <- moves[i]:(moves[i + 1] - 1)
-            if (length(index) > 1) {
-                newpaths[[i]] <- new(if (fill)
-                                     "PictureFill" else "PictureStroke",
-                                     x=path@x[index],
-                                     y=path@y[index],
-                                     lwd=path@lwd, rgb=path@rgb)
+        if (npaths > 1) {
+            newpaths <- vector("list", npaths)
+            for (i in 1:(npaths - 1)) {
+                index <- moves[i]:(moves[i + 1] - 1)
+                if (length(index) > 1) {
+                    newpaths[[i]] <- new(if (fill)
+                                         "PictureFill" else "PictureStroke",
+                                         x=path@x[index],
+                                         y=path@y[index],
+                                         lwd=path@lwd, rgb=path@rgb)
+                }
             }
+            index <- moves[npaths]:length(ops)
+            if (length(index) > 1) {
+                newpaths[[npaths]] <- new(if (fill)
+                                          "PictureFill" else "PictureStroke",
+                                          x=path@x[moves[npaths]:length(ops)],
+                                          y=path@y[moves[npaths]:length(ops)],
+                                          lwd=path@lwd, rgb=path@rgb)
+            }
+            newpaths[!sapply(newpaths, is.null)]
+        } else {
+            path
         }
-        index <- moves[npaths]:length(ops)
-        if (length(index) > 1) {
-            newpaths[[npaths]] <- new(if (fill)
-                                      "PictureFill" else "PictureStroke",
-                                      x=path@x[moves[npaths]:length(ops)],
-                                      y=path@y[moves[npaths]:length(ops)],
-                                      lwd=path@lwd, rgb=path@rgb)
-        }
-        newpaths[!sapply(newpaths, is.null)]
     } else {
         list()
     }
