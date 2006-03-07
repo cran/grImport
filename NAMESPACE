@@ -1,0 +1,26 @@
+
+exportClasses("Picture")
+exportClasses("PictureOp")
+exportClasses("PictureStroke")
+exportClasses("PictureFill")
+exportClasses("PictureSummary")
+
+exportMethods("[")
+
+export(PostScriptTrace)
+
+export(readPicture)
+
+export(grobify)
+export(symbolize)
+
+export(grid.picture)
+export(pictureGrob)
+export(grid.symbols)
+export(symbolsGrob)
+export(picturePaths)
+
+S3method("xDetails", "picture")
+S3method("yDetails", "picture")
+S3method("drawDetails", "symbolStroke")
+S3method("drawDetails", "symbolFill")
