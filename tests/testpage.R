@@ -53,7 +53,7 @@ testpageps <- readLines("testpage.ps")
 p3line <- grep("^/p3", testpageps)
 testpageps[p3line] <-
     paste(testpageps[p3line],
-          "\n/p4 { gsave bg setrgbcolor eofill grestore stroke } def")
+          "\n/p4 { gsave bg eofill grestore stroke } def")
 fillline <- grep(" p3$", testpageps)
 testpageps[fillline[1]] <- gsub(" p3$", " p4", testpageps[fillline[1]])
 writeLines(testpageps, "testpage.ps")
