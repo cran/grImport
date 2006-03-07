@@ -1,0 +1,29 @@
+
+Changes from version 0.1 to 0.2
+=================================
+
+1.  Importing text was not working at all;  this now works, though
+    imported text is just character outlines.  The default drawing
+    method just strokes the character outline;  you can attempt
+    to fill the characters, in which case, the first outline in each
+    character is filled in the current colour, then all subsequent 
+    outlines for the character are filled using a user-specified 
+    background colour (default is "white").  This a very simple-
+    minded approach, but it does work for some straightforward
+    examples (an example where it doesn't work is the dot on a 
+    lower-case "i").
+
+    This change adds a new "char" type of path (to the existing
+    "stroke" and "fill" types) and a new "PictureChar" class
+    (to the existing "PictureStroke" and "PictureFill" classes).
+
+2.  A path with zero locations used to cause an error;  such
+    paths are now just not drawn.
+
+3.  A new function explodePaths() breaks up any path with multiple
+    'move' operations into separate paths.
+
+4.  Added some tests in test/ dir.
+
+[thanks to Ken Knoblauch for bug reports and testing 
+ that led to these improvements]

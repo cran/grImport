@@ -21,6 +21,105 @@ pictureVP <- function(picture, exp=0.05, xscale=NULL, yscale=NULL, ...) {
 }
 
 ##################
+# Explode a PictureOp whose path has more than one "move"
+# into multiple PictureOps
+##################
+explodePath <- function(path, fill) {
+    ops <- attr(path@x, "names")
+    if (length(ops) > 1) {
+        moves <- grep("move", ops)
+        npaths <- length(moves)
+        newpaths <- vector("list", npaths)
+        for (i in 1:(npaths - 1)) {
+            index <- moves[i]:(moves[i + 1] - 1)
+            if (length(index) > 1) {
+                newpaths[[i]] <- new(if (fill)
+                                     "PictureFill" else "PictureStroke",
+                                     x=path@x[index],
+                                     y=path@y[index],
+                                     lwd=path@lwd, rgb=path@rgb)
+            }
+        }
+        index <- moves[npaths]:length(ops)
+        if (length(index) > 1) {
+            newpaths[[npaths]] <- new(if (fill)
+                                      "PictureFill" else "PictureStroke",
+                                      x=path@x[moves[npaths]:length(ops)],
+                                      y=path@y[moves[npaths]:length(ops)],
+                                      lwd=path@lwd, rgb=path@rgb)
+        }
+        newpaths[!sapply(newpaths, is.null)]
+    } else {
+        list()
+    }
+}
+
+setGeneric("explode",
+           function(object, ...) {
+               standardGeneric("explode")
+           })
+
+setMethod("explode", signature(object="PictureStroke"),
+          function(object, ...) {
+              explodePath(object, FALSE)
+          })
+
+setMethod("explode", signature(object="PictureFill"),
+          function(object, ...) {
+              explodePath(object, TRUE)
+          })
+
+# Exploding a PictureText does nothing to the object
+setMethod("explode", signature(object="PictureText"),
+          function(object, ...) {
+              object
+          })
+
+##################
+# Modify the paths in a PictureChar (known to be a traced character):
+# First explode the character into multiple paths.
+# If stroking, add path start at end to close each path.
+# If filling, fill first path with path colour, but all
+# subsequent paths with a background colour
+# (simple heuristic that may or may not work).
+##################
+fixPath <- function(path, i, fill, bg) {
+    # At this point I know that each path has only one "move"
+    # AND that each path has at least two locations
+    # (these are sorted out by explodePath()
+    if (fill) {
+        if (i == 1) {
+            path
+        } else {
+            new("PictureFill",
+                x=path@x,
+                y=path@y,
+                lwd=path@lwd, rgb=bg)
+        }
+    } else {
+        new("PictureStroke",
+            x=c(path@x, path@x[1]),
+            y=c(path@y, path@y[1]),
+            # Use a light stroke
+            lwd=0.25, rgb=path@rgb)
+    }
+}
+
+setMethod("explode", signature(object="PictureChar"),
+          function(object, fill, bg, ...) {
+              paths <- explodePath(object, fill)
+              np <- length(paths)
+              if (np > 0) {
+                  newpaths <- vector("list", np)
+                  for (i in 1:np) {
+                      newpaths[[i]] <- fixPath(paths[[i]], i, fill, bg)
+                  }
+                  paths <- newpaths
+              }
+              paths
+          })
+
+##################
 # Convert picture or path into single grob
 # For using picture as a one-off (e.g., plot background)
 ##################
@@ -32,23 +131,53 @@ setGeneric("grobify",
 
 # Individual path converted into grob
 setMethod("grobify", signature(object="PictureStroke"),
-          function(object, ..., use.gc=TRUE) {
-              if (use.gc) {
-                  linesGrob(object@x, object@y, default.units="native",
-                            gp=gpar(lwd=object@lwd, col=object@rgb), ...)
+          function(object, ..., fillText, bgText, use.gc=TRUE) {
+              if (length(object@x) > 1) {
+                  if (use.gc) {
+                      linesGrob(object@x, object@y, default.units="native",
+                                gp=gpar(lwd=object@lwd, col=object@rgb), ...)
+                  } else {
+                      linesGrob(object@x, object@y,
+                                default.units="native", ...)
+                  }
               } else {
-                  linesGrob(object@x, object@y, default.units="native", ...)
+                  NULL
               }
           })
 
 setMethod("grobify", signature(object="PictureFill"),
-          function(object, ..., use.gc=TRUE) {
-              if (use.gc) {
-                  polygonGrob(object@x, object@y, default.units="native",
-                              gp=gpar(col=NA, fill=object@rgb), ...)
+          function(object, ..., fillText, bgText, use.gc=TRUE) {
+              if (length(object@x) > 1) {
+                  if (use.gc) {
+                      polygonGrob(object@x, object@y, default.units="native",
+                                  gp=gpar(col=NA, fill=object@rgb), ...)
+                  } else {
+                      polygonGrob(object@x, object@y,
+                                  default.units="native", ...)
+                  }
               } else {
-                  polygonGrob(object@x, object@y, default.units="native", ...)
+                  NULL
               }
+          })
+
+setMethod("grobify", signature(object="PictureText"),
+          function(object, ..., fillText, bgText, use.gc=TRUE) {
+              if (use.gc) {
+                  pictureTextGrob(object@string,
+                                  object@x, object@y,
+                                  object@w, object@h,
+                                  gp=gpar(col=object@rgb), ...)
+              } else {
+                  pictureTextGrob(object@string,
+                                  object@x, object@y,
+                                  object@w, object@h, ...)
+              }
+          })
+
+setMethod("grobify", signature(object="PictureChar"),
+          function(object, ..., fillText=FALSE, bgText="white", use.gc=TRUE) {
+              paths <- explode(object, fillText, bgText)
+              do.call("gList", lapply(paths, grobify, ..., use.gc=use.gc))
           })
 
 pictureHull <- function(object) {
@@ -65,7 +194,7 @@ setMethod("grobify", signature(object="Picture"),
                    just="centre", xscale=NULL, yscale=NULL, exp=0.05,
                    FUN=grobify, ..., name=name, gp=gpar()) {
               gTree(childrenvp=pictureVP(object,
-                      exp=0.05, xscale=xscale, yscale=yscale,
+                      exp=exp, xscale=xscale, yscale=yscale,
                       x=x, y=y, width=width, height=height,
                       just=just, gp=gp),
                     children=do.call("gList",
@@ -205,10 +334,14 @@ setMethod("symbolize", signature(object="PictureStroke"),
                    size=unit(1, "npc"),
                    units="npc",
                    xscale=NULL, yscale=NULL, ..., use.gc=TRUE) {
-              grob(object=object, x=x, y=y, size=size,
-                   units=units, xscale=xscale, yscale=yscale,
-                   use.gc=use.gc, poly.args=list(...),
-                   cl="symbolStroke")
+              if (length(object@x) > 1) {
+                  grob(object=object, x=x, y=y, size=size,
+                       units=units, xscale=xscale, yscale=yscale,
+                       use.gc=use.gc, poly.args=list(...),
+                       cl="symbolStroke")
+              } else {
+                  NULL
+              }
           })
 
 setMethod("symbolize", signature(object="PictureFill"),
@@ -218,10 +351,36 @@ setMethod("symbolize", signature(object="PictureFill"),
                    size=unit(1, "npc"),
                    units="npc",
                    xscale=NULL, yscale=NULL, ..., use.gc=TRUE) {
-              grob(object=object, x=x, y=y, size=size,
-                   units=units, xscale=xscale, yscale=yscale,
-                   use.gc=use.gc, poly.args=list(...),
-                   cl="symbolFill")
+              if (length(object@x) > 1) {
+                  grob(object=object, x=x, y=y, size=size,
+                       units=units, xscale=xscale, yscale=yscale,
+                       use.gc=use.gc, poly.args=list(...),
+                       cl="symbolFill")
+              } else {
+                  NULL
+              }
+          })
+
+setMethod("symbolize", signature(object="PictureText"),
+          function(object,
+                   x=unit(0.5, "npc"),
+                   y=unit(0.5, "npc"),
+                   size=unit(1, "npc"),
+                   units="npc",
+                   xscale=NULL, yscale=NULL, ..., use.gc=TRUE) {
+              # Do not allow text in imported picture used for symbol (yet)
+              NULL
+          })
+
+setMethod("symbolize", signature(object="PictureChar"),
+          function(object,
+                   x=unit(0.5, "npc"),
+                   y=unit(0.5, "npc"),
+                   size=unit(1, "npc"),
+                   units="npc",
+                   xscale=NULL, yscale=NULL, ..., use.gc=TRUE) {
+              # Do not allow text in imported picture used for symbol (yet)
+              NULL
           })
 
 setMethod("symbolize", signature(object="Picture"),
@@ -275,10 +434,21 @@ symbolsGrob <- function(picture,
 grid.symbols <- function(...) {
     grid.draw(symbolsGrob(...))
 }
-                       
+
+explodePaths <- function(picture) {
+    picture@paths <- unlist(lapply(picture@paths, explode), recursive=FALSE)
+    picture@summary <- new("PictureSummary",
+                           numPaths=length(picture@paths),
+                           xscale=picture@summary@xscale,
+                           yscale=picture@summary@yscale)
+    picture
+}
+
 picturePaths <- function(picture,
                          nr, nc,
-                         bg="light grey", 
+                         col="black",
+                         fill="light grey",
+                         freeScales=FALSE, 
                          xscale=NULL, yscale=NULL,	      
                          label=function(n) { 
                              tg <- textGrob(n, x=0, y=0, 
@@ -299,25 +469,43 @@ picturePaths <- function(picture,
         xscale <- picture@summary@xscale
 	yscale <- picture@summary@yscale
     }
-    pushViewport(viewport(layout=grid.layout(nr, nc,
-                            widths=rep(diff(range(xscale)),
-                              nc),
-                            heights=rep(diff(range(yscale)),
-                              nr),
-                            respect=TRUE)))
+    if (freeScales) {
+        pushViewport(viewport(layout=grid.layout(nr, nc)))        
+    } else {
+        pushViewport(viewport(layout=grid.layout(nr, nc,
+                                widths=rep(diff(range(xscale)),
+                                  nc),
+                                heights=rep(diff(range(yscale)),
+                                  nr),
+                                respect=TRUE)))
+    }
     for (i in 1:nr) {
         for (j in 1:nc) {
             pnum <- (i - 1)*nc + j
             if (pnum <= picture@summary@numPaths) {
                 pushViewport(viewport(layout.pos.col=j,
-                                      layout.pos.row=i),
-                             viewport(width=0.95, height=0.95,
+                                      layout.pos.row=i))
+                if (freeScales) {
+                    pushViewport(viewport(width=0.95, height=0.95))
+                    grid.rect(gp=gpar(col=col, fill=fill))
+                    grid.picture(picture[pnum])
+                    popViewport()
+                } else {
+                    pushViewport(viewport(width=0.95, height=0.95,
                                       xscale=xscale,
                                       yscale=yscale))
-                grid.rect(gp=gpar(fill=bg))
-                label(pnum)
-                grid.draw(grobify(picture@paths[[pnum]], use.gc=use.gc))
-                popViewport(2)
+                    grid.rect(gp=gpar(col=col, fill=fill))
+                    label(pnum)
+                    grob <- grobify(picture@paths[[pnum]], use.gc=use.gc)
+                    if (is.null(grob)) {
+                        grid.text("EMPTY\nPATH",
+                                  gp=gpar(fontsize=6))
+                    } else {
+                        grid.draw(grob)
+                    }
+                    popViewport()
+                }
+                popViewport()
             }
         }
     }

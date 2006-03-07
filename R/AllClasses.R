@@ -13,6 +13,15 @@ setClass("PictureStroke",
 setClass("PictureFill",
          representation("PictureOp"))
 
+setClass("PictureText",
+         representation("PictureOp",
+                        string="character",
+                        w="numeric",
+                        h="numeric"))
+
+setClass("PictureChar",
+         representation("PictureOp"))
+
 setClass("PictureSummary",
          representation(numPaths="numeric",
                         xscale="numeric",
