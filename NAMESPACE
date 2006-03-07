@@ -1,5 +1,5 @@
 
-import(methods, grid, XML)
+import(grid, XML)
 
 exportClasses("Picture")
 exportClasses("PictureOp")
