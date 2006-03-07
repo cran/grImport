@@ -12,6 +12,7 @@ grid.picture(...)
 pictureGrob(picture, x = 0.5, y = 0.5,
             width = 1, height = 1, just = "centre",
             exp = 0.05, xscale = NULL, yscale = NULL,
+            distort = FALSE,
             FUN = grobify, ..., name = NULL, gp = gpar())
 
 }
@@ -38,6 +39,9 @@ pictureGrob(picture, x = 0.5, y = 0.5,
     maximum on the x-scale.}
   \item{yscale}{A numeric vector of length two indicating the minimum
     and maximum on the y-scale.}
+  \item{distort}{A logical value indicating whether the image
+    should preserve its aspect ratio or distort to fit the
+    area it is being drawn within. }
   \item{FUN}{The function used to convert paths within the picture
     to grid grobs.}
   \item{\dots}{For \code{grid.picture} arguments to be passed to

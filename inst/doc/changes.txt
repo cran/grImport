@@ -1,3 +1,15 @@
+Changes from version 0.2-4 to 0.3
+=================================
+
+1.  Added 'distort' argument to grid.picture() so that image
+    will not try to maintain its aspect ratio if distort=TRUE.
+
+    Decided to bump minor version number cos this is not just 
+    a bug fix.
+
+    Motivated by feature request from Toby Dylan Hocking.
+
+
 Changes from version 0.2-3 to 0.2-4
 ===================================
 

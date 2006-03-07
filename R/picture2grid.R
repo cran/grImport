@@ -2,18 +2,25 @@
 # Convert graphics-system-neutral "picture" into grid gList
 
 # Viewport from picture
-pictureVP <- function(picture, exp=0.05, xscale=NULL, yscale=NULL, ...) {
+pictureVP <- function(picture, exp=0.05, xscale=NULL, yscale=NULL,
+                      distort=FALSE, ...) {
     if (is.null(xscale) || is.null(yscale)) {
         xscale <- picture@summary@xscale
 	yscale <- picture@summary@yscale
     }
     xscale <- xscale + exp*c(-1, 1)*diff(range(xscale))
     yscale <- yscale + exp*c(-1, 1)*diff(range(yscale))
+    # If distort=TRUE, having the two layers of viewports is
+    # massively redundant, BUT I'm keeping it so that either
+    # way there is the same viewport structure, which I think
+    # is beneficial if anyone ever wants to make use of
+    # these viewports (otherwise they would need to figure
+    # out whether a picture grob has one or two viewports).
     vpStack(viewport(name="picture.shape", ...,
                      layout=grid.layout(1, 1,
                        widths=abs(diff(xscale)),
                        heights=abs(diff(yscale)),
-                       respect=TRUE)),
+                       respect=!distort)),
             viewport(name="picture.scale",
                      layout.pos.col=1,
                      xscale=xscale,
@@ -196,9 +203,10 @@ setMethod("grobify", signature(object="Picture"),
                    x=unit(0.5, "npc"), y=unit(0.5, "npc"),
                    width=unit(1, "npc"), height=unit(1, "npc"),
                    just="centre", xscale=NULL, yscale=NULL, exp=0.05,
-                   FUN=grobify, ..., name=name, gp=gpar()) {
+                   FUN=grobify, distort=FALSE, ..., name=name, gp=gpar()) {
               gTree(childrenvp=pictureVP(object,
                       exp=exp, xscale=xscale, yscale=yscale,
+                      distort=distort,
                       x=x, y=y, width=width, height=height,
                       just=just, gp=gp),
                     children=do.call("gList",
@@ -411,11 +419,12 @@ pictureGrob <- function(picture,
                         x=0.5, y=0.5, width=1, height=1,
 			just="centre", 
 			exp=0.05, xscale=NULL, yscale=NULL,
+                        distort=FALSE,
                         FUN=grobify, ...,
                         name=NULL, gp=gpar()) {
     grobify(picture, 
             x=x, y=y, width=width, height=height, just=just,
-            exp=exp, xscale=xscale, yscale=yscale, FUN=FUN,
+            exp=exp, xscale=xscale, yscale=yscale, distort=distort, FUN=FUN,
             ..., name=name, gp=gp)
 }
 
