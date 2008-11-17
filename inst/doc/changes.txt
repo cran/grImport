@@ -1,3 +1,23 @@
+Changes from version 0.3-1 to 0.4
+=================================
+
+1.  Fixed bug in how the width and height of text is calculated when
+    PostScriptTrace(charpath=FALSE).
+
+2.  Added 'setflat' argument to PostScriptTrace() to allow
+    control of how many lines each curve is broken into.
+
+3.  Allowed 'label' argument of picturePaths() to be a logical
+    so can easily turn off labelling.
+
+4.  Added a DTD for the RGML format (in inst/dtd/).
+
+5.  Added a 'version' attribute to the <picture> element
+    in the RGML format.  This allows 'grImport' to detect
+    out-of-date RGML files and prompt for PostScriptTrace()
+    to be re-run.
+
+
 Changes from version 0.3 to 0.3-1
 =================================
 

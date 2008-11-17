@@ -38,7 +38,8 @@ picturePaths(picture, nr, nc,
     maximum on the x-scale.}
   \item{yscale}{A numeric vector of length two indicating the minimum
     and maximum on the y-scale.}
-  \item{label}{ Function to draw a label on each path. }
+  \item{label}{ Function to draw a label on each path. If any value
+    other than a function is specified, no labels are drawn. }
   \item{use.gc}{ A boolean indicating whether to use the graphical
     parameter information in the path. }
 }

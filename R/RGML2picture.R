@@ -26,21 +26,25 @@ readPicture <- function(rgmlFile) {
                                rgb=rgb(as.numeric(gc$rgb["r"]),
                                  as.numeric(gc$rgb["g"]),
                                  as.numeric(gc$rgb["b"]))),
-                             text=new("PictureText",
-                               string=xmlAttrs(x)["string"],
-                               x=as.numeric(xmlAttrs(x)["x"]),
-                               y=as.numeric(xmlAttrs(x)["y"]),
-                               w=as.numeric(xmlAttrs(x)["width"]),
-                               h=as.numeric(xmlAttrs(x)["height"]),
-                               lwd=as.numeric(gc$style["lwd"]),
-                               rgb=rgb(as.numeric(gc$rgb["r"]),
-                                 as.numeric(gc$rgb["g"]),
-                                 as.numeric(gc$rgb["b"]))),
                              char=new("PictureChar", x=xval, y=yval,
                                lwd=as.numeric(gc$style["lwd"]),
                                rgb=rgb(as.numeric(gc$rgb["r"]),
                                  as.numeric(gc$rgb["g"]),
                                  as.numeric(gc$rgb["b"]))))
+                  },
+               text={ # get context
+                      gc = funGetGC(xmlElementsByTagName(x, "context")[[1]])
+
+                      new("PictureText",
+                          string=xmlAttrs(x)["string"],
+                          x=as.numeric(xmlAttrs(x)["x"]),
+                          y=as.numeric(xmlAttrs(x)["y"]),
+                          w=as.numeric(xmlAttrs(x)["width"]),
+                          h=as.numeric(xmlAttrs(x)["height"]),
+                          lwd=as.numeric(gc$style["lwd"]),
+                          rgb=rgb(as.numeric(gc$rgb["r"]),
+                            as.numeric(gc$rgb["g"]),
+                            as.numeric(gc$rgb["b"])))
                   },
                summary={ attrs <- xmlAttrs(x)
                          numattrs <- as.numeric(xmlAttrs(x)) 
@@ -49,6 +53,10 @@ readPicture <- function(rgmlFile) {
     }
 
     xmlDoc = xmlTreeParse(rgmlFile)
+    version <- as.numeric(xmlAttrs(xmlRoot(xmlDoc))["version"])
+    if (version != 2)
+        stop(paste("Version mismatch:",
+                   "RGML file needs to be recreated with PostScriptTrace()"))
     RGMLlist <- xmlApply(xmlRoot(xmlDoc), funPath)
     new("Picture",
         paths=RGMLlist[-length(RGMLlist)],

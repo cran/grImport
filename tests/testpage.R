@@ -115,6 +115,8 @@ pushViewport(viewport(layout.pos.row=7,
                       layout.pos.col=1))
 grid.rect()
 grid.text("Substituted text")
+# NOTE: the text "stroke" is drawn in two parts
+# in the PostScript file, "strok" and "e", due to kerning
 popViewport()
 pushViewport(viewport(layout.pos.row=8,
                       layout.pos.col=1))

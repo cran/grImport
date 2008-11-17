@@ -5,12 +5,15 @@
   Converts a PostScript file into an RGML file, which is
   an XML document describing an image that can be read into R.
 }
-\usage{PostScriptTrace(file, outfilename, charpath=TRUE)}
+\usage{PostScriptTrace(file, outfilename,
+                       charpath=TRUE, setflat=NULL)}
 \arguments{
   \item{file}{The name of the PostScript file.}
   \item{outfilename}{The name of the XML document.}
   \item{charpath}{A boolean indicating whether text in the PostScript
     file should be converted to vector outlines, or left as just text.}
+  \item{setflat}{A number that controls how many straight lines a curve
+    is broken into.  Lower values break a curve into more lines. }
 }
 \details{
   This function calls ghostscript to do the conversion,

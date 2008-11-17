@@ -508,7 +508,9 @@ picturePaths <- function(picture,
                                       xscale=xscale,
                                       yscale=yscale))
                     grid.rect(gp=gpar(col=col, fill=fill))
-                    label(pnum)
+                    if (is.function(label)) {
+                        label(pnum)
+                    }
                     grob <- grobify(picture@paths[[pnum]], use.gc=use.gc)
                     if (is.null(grob)) {
                         grid.text("EMPTY\nPATH",

@@ -4,13 +4,13 @@ PScaptureText <- c()
 
 PScaptureChars <- c()
     
-PScaptureHead <- function(charpath) {
+PScaptureHead <- function(charpath, setflat) {
     c("%!PS-Adobe-2.0 EPSF-1.2",
       "%%BeginProcSet:convertToR 0 0",
       
       # XML file header info
       "(<?xml version='1.0'?>\n\n) print",
-      "(<picture xmlns:rgml = 'http://r-project.org/RGML'>\n\n) print",
+      "(<picture version='2' xmlns:rgml='http://r-project.org/RGML'>\n\n) print",
 
       # useful definitions
       # Define my counters GLOBALLY so the postscript
@@ -131,7 +131,7 @@ PScaptureHead <- function(charpath) {
       "  (</path>\n\n) print",
       "} def",
       "/mytext {",
-      "  (<path type='text') print",
+      "  (<text ) print",
       "  ( id=') print convertToR /id get str cvs print (') print",
       "  ( string=') print dup print (') print",
       # (x, y) location of text
@@ -155,12 +155,30 @@ PScaptureHead <- function(charpath) {
       # (width, height) of text
       "  dup true charpath flattenpath mark pathbbox",
       "  ( width=') print",
+      # pathbbox has put left, bottom, right, top on stack
+      # (indexing is 0-based)
+      # Leave this original for height calculation later
       # Calculate width
-      "    1 index 4 index sub",
-      # Add to current x for checking against xmin/xmax
-      "    dup currentpoint pop add",
-      # Get currentpoint[y] so can transform 
-      "    currentpoint exch pop", # Drop currentpoint[x]
+      # Transform bbox THEN subtract
+      #    Pull out right-top
+      #    (NOTE: after first index, there is another value on stack)
+      "    1 index 1 index",
+      #    Transform right-top and pop transformed top
+      #    (NOTE: transformed right is now on top of stack)
+      "    matrix currentmatrix transform pop",
+      #    Pull out left-bottom
+      "    4 index 4 index",
+      #    Transform left-bottom and pop transformed top
+      #    (NOTE: transformed left is now on top of stack)
+      "    matrix currentmatrix transform pop",
+      # Subtract transformed right - transformed left
+      "    sub",
+      "    str cvs print (') print",
+      # At this point should be back to pathbbox on top of stack
+      # DO NOT add to current x for checking against xmin/xmax
+      # because current point has already moved to end of text, 
+      # so just use currentpoint
+      "    currentpoint",
       "    matrix currentmatrix",
       "    transform pop", # Drop (transformed) currentpoint[y]
       "    dup",
@@ -168,15 +186,12 @@ PScaptureHead <- function(charpath) {
       "    dup",
       "    convertToR /xmin get lt {convertToR /xmin curx put} if",
       "    convertToR /xmax get gt {convertToR /xmax curx put} if",      
-      # Transform original width (use dummy 0 for y)
-      "    0 matrix currentmatrix",
-      "    transform pop", # Drop (transformed) dummy y 
-      "    str cvs print (') print",
       "  ( height=') print",
+      # At this point should be back to pathbbox on top of stack
       # Calculate height
-      "    2 index sub",
+      "    dup 3 index sub",
       # Add to current y for checking against ymin/ymax
-      "    dup currentpoint exch pop add",
+      "    currentpoint exch pop add",
       # Get currentpoint[x] so can transform 
       "    currentpoint pop exch", # Drop currentpoint[y]
       "    matrix currentmatrix",
@@ -186,10 +201,23 @@ PScaptureHead <- function(charpath) {
       "    dup",
       "    convertToR /ymin get lt {convertToR /ymin cury put} if",
       "    convertToR /ymax get gt {convertToR /ymax cury put} if",      
-      # Transform original height (use dummy 0 for x)
-      "    0 exch matrix currentmatrix",
-      "    transform exch pop", # Drop (transformed) dummy x 
+      # At this point should be back to pathbbox on top of stack
+      # Transform bbox THEN subtract
+      #    Pull out right-top
+      #    (NOTE: after first index, there is another value on stack)
+      "    1 index 1 index",
+      #    Transform right-top and pop transformed right
+      #    (NOTE: transformed top is now on top of stack)
+      "    matrix currentmatrix transform exch pop",
+      #    Pull out left-bottom
+      "    4 index 4 index",
+      #    Transform left-bottom and pop transformed left
+      #    (NOTE: transformed bottom is now on top of stack)
+      "    matrix currentmatrix transform exch pop",
+      # Subtract transformed top - transformed bottom
+      "    sub",
       "    str cvs print (') print",
+      # Clean up stack back to pre-pathbbox call
       "  cleartomark",
       "  (>\n) print",
       "  (\t<context>\n) print",
@@ -197,7 +225,7 @@ PScaptureHead <- function(charpath) {
       "  printstyle",
       "  (\t</context>\n\n) print",
       "  convertToR /id get 1 add convertToR exch /id exch put",
-      "  (</path>\n\n) print",
+      "  (</text>\n\n) print",
       "} def",
       "/mychar {",
       "  (<path type='char') print",
@@ -249,6 +277,7 @@ PScaptureHead <- function(charpath) {
       } else {
           c("/show {",
             "  mytext",
+            "  currentpoint newpath moveto",
             "} def")
       },
       
@@ -263,6 +292,9 @@ PScaptureHead <- function(charpath) {
       "",
       "convertToR begin",
       "dummy begin",
+      if (!is.null(setflat)) {
+          paste(setflat, "setflat")
+      },
       "")
 }
 
@@ -282,13 +314,13 @@ PScaptureFoot <-
       )
 
 # Generate RGML file from PostScript file
-PostScriptTrace <- function(file, outfilename, charpath=TRUE) {
+PostScriptTrace <- function(file, outfilename, charpath=TRUE, setflat=NULL) {
     # Create temporary PostScript file which loads
     # dictionary redefining stroke and fill operators
     # and then runs target PostScript file
     psfilename <- paste("capture", basename(file), sep="")
     psfile <- file(psfilename, "w")
-    writeLines(PScaptureHead(charpath), psfile)
+    writeLines(PScaptureHead(charpath, setflat), psfile)
     # Reconstitute file name here to handle Windows-style paths
     # in the file name
     writeLines(paste("(", file.path(dirname(file), basename(file)),
