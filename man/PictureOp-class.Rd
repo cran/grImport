@@ -4,7 +4,7 @@
 
 \title{Class "PictureOp" }
 \description{
-A virtual class from which \code{"PictureStroke}
+A virtual class from which \code{"PictureStroke"}
 and \code{"PictureFill"} are derived.
 }
 \section{Slots}{
