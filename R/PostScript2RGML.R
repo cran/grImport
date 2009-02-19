@@ -4,14 +4,17 @@ PScaptureText <- c()
 
 PScaptureChars <- c()
     
-PScaptureHead <- function(charpath, setflat) {
+PScaptureHead <- function(file, charpath, setflat) {
     c("%!PS-Adobe-2.0 EPSF-1.2",
       "%%BeginProcSet:convertToR 0 0",
       
       # XML file header info
       "(<?xml version='1.0'?>\n\n) print",
-      "(<picture version='2' xmlns:rgml='http://r-project.org/RGML'>\n\n) print",
-
+      paste("(<picture version='2' xmlns:rgml='http://r-project.org/RGML'",
+            " source='", file, "'",
+            " date='", as.character(Sys.time()), "'",
+            " creator='R (", R.Version()$major, ".", R.Version()$minor, ")'",
+            " >\n\n) print", sep=""),
       # useful definitions
       # Define my counters GLOBALLY so the postscript
       # file I run cannot reset my counters with a restore!
@@ -320,7 +323,7 @@ PostScriptTrace <- function(file, outfilename, charpath=TRUE, setflat=NULL) {
     # and then runs target PostScript file
     psfilename <- paste("capture", basename(file), sep="")
     psfile <- file(psfilename, "w")
-    writeLines(PScaptureHead(charpath, setflat), psfile)
+    writeLines(PScaptureHead(file, charpath, setflat), psfile)
     # Reconstitute file name here to handle Windows-style paths
     # in the file name
     writeLines(paste("(", file.path(dirname(file), basename(file)),

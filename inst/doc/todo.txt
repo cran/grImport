@@ -13,4 +13,13 @@
 3.  Add tests/ code to check that PostScriptTrace() generates
     RGML code that is consistent with inst/dtd/rgml.dtd
 
+4.  Allow assigning to subsets of picture objects.
+
+5.  Export bitmaps from PostScript files too.  Requires modifying
+    the PostScript code that translates the original file, extending
+    RGML to store bitmaps, extending the Picture class to allow 
+    bitmap elements, and code to render these bitmaps.
+
+6.  Allow subsetting picture paths by *name* (requires naming
+    picture paths).
 

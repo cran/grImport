@@ -1,6 +1,6 @@
 
 # Create a list straight from the RGML file
-readPicture <- function(rgmlFile) {
+readPicture <- function(rgmlFile, ...) {
     funGetX = function(x) { as.numeric(xmlAttrs(x)["x"]) }
     funGetY = function(x) { as.numeric(xmlAttrs(x)["y"]) }
     funGetGC = function(x) { pars <- xmlApply(x, xmlAttrs) }
@@ -52,7 +52,7 @@ readPicture <- function(rgmlFile) {
                          numattrs })
     }
 
-    xmlDoc = xmlTreeParse(rgmlFile)
+    xmlDoc = xmlTreeParse(rgmlFile, ...)
     version <- as.numeric(xmlAttrs(xmlRoot(xmlDoc))["version"])
     if (version != 2)
         stop(paste("Version mismatch:",

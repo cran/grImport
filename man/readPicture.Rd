@@ -7,11 +7,13 @@
   \code{"Picture"} object.
 }
 \usage{
-readPicture(rgmlFile)
+readPicture(rgmlFile, \dots)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{rgmlFile}{ The name of the RGML file. }
+  \item{\dots}{ Arguments that are passed to \code{xmlTreeParse()}
+    for reading the RGML file. }
 }
 \value{
   An object of class \code{"Picture"}.
