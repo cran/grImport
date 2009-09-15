@@ -1,3 +1,9 @@
+Changes from version 0.4 to 0.4-4
+=================================
+
+1.  Added support for /ashow operator.
+
+
 Changes from version 0.3-1 to 0.4
 =================================
 

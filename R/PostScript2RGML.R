@@ -272,14 +272,36 @@ PScaptureHead <- function(file, charpath, setflat) {
       # move to save location
       "  currentpoint newpath moveto",
       "} def",
+      "/astrokechar {",
+      "  exch dup 3 -1 roll",
+      "  1 getinterval",
+      "  3 index 3 index rmoveto",
+      "  true charpath flattenpath",
+      "  {mymove} {myline} {mycurve} {myclose}",
+      "  mychar",
+      "  currentpoint newpath moveto",
+      "} def",
       
       if (charpath) {
           c("/show {",
             "  dup length -1 add 0 exch 1 exch {strokechar} for",
+            "} def",
+            "/ashow {",
+            # Do first char without adjustment
+            "  0 strokechar",
+            # Do remaining chars with adjustment
+            "  dup length -1 add 1 exch 1 exch {astrokechar} for",
+            "  pop pop pop", # Remove original string plus ax and ay
             "} def")
       } else {
           c("/show {",
             "  mytext",
+            "  currentpoint newpath moveto",
+            "} def",
+            # Ignores the fine placement of characters within an /ashow
+            "/ashow {",
+            "  mytext",
+            "  pop pop pop", # Remove the string and ax and ay from the /ashow
             "  currentpoint newpath moveto",
             "} def")
       },
