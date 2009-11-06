@@ -4,12 +4,13 @@ PScaptureText <- c()
 
 PScaptureChars <- c()
     
-PScaptureHead <- function(file, charpath, setflat) {
+PScaptureHead <- function(file, charpath, setflat, encoding) {
     c("%!PS-Adobe-2.0 EPSF-1.2",
       "%%BeginProcSet:convertToR 0 0",
       
       # XML file header info
-      "(<?xml version='1.0'?>\n\n) print",
+      sprintf("(<?xml version='1.0' encoding='%s' ?>\n\n) print",
+              encoding),
       paste("(<picture version='2' xmlns:rgml='http://r-project.org/RGML'",
             " source='", file, "'",
             " date='", as.character(Sys.time()), "'",
@@ -339,13 +340,15 @@ PScaptureFoot <-
       )
 
 # Generate RGML file from PostScript file
-PostScriptTrace <- function(file, outfilename, charpath=TRUE, setflat=NULL) {
+PostScriptTrace <- function(file, outfilename,
+                            charpath=TRUE, setflat=NULL,
+                            encoding="ISO-8859-1") {
     # Create temporary PostScript file which loads
     # dictionary redefining stroke and fill operators
     # and then runs target PostScript file
     psfilename <- paste("capture", basename(file), sep="")
     psfile <- file(psfilename, "w")
-    writeLines(PScaptureHead(file, charpath, setflat), psfile)
+    writeLines(PScaptureHead(file, charpath, setflat, encoding), psfile)
     # Reconstitute file name here to handle Windows-style paths
     # in the file name
     writeLines(paste("(", file.path(dirname(file), basename(file)),

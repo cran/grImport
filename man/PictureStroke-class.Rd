@@ -6,8 +6,6 @@
 
 \title{Class "PictureStroke" }
 \description{A polyline path (that might be part of a larger picture). }
-\section{Objects from the Class}{
-}
 \section{Slots}{
 	 \describe{
     \item{\code{x}:}{Object of class \code{"numeric"} }
