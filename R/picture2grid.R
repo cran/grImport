@@ -45,7 +45,9 @@ explodePath <- function(path, fill) {
                                          "PictureFill" else "PictureStroke",
                                          x=path@x[index],
                                          y=path@y[index],
-                                         lwd=path@lwd, rgb=path@rgb)
+                                         lwd=path@lwd,
+                                         lty=path@lty,
+                                         rgb=path@rgb)
                 }
             }
             index <- moves[npaths]:length(ops)
@@ -54,7 +56,9 @@ explodePath <- function(path, fill) {
                                           "PictureFill" else "PictureStroke",
                                           x=path@x[moves[npaths]:length(ops)],
                                           y=path@y[moves[npaths]:length(ops)],
-                                          lwd=path@lwd, rgb=path@rgb)
+                                          lwd=path@lwd,
+                                          lty=path@lty,
+                                          rgb=path@rgb)
             }
             newpaths[!sapply(newpaths, is.null)]
         } else {
@@ -105,14 +109,14 @@ fixPath <- function(path, i, fill, bg) {
             new("PictureFill",
                 x=path@x,
                 y=path@y,
-                lwd=path@lwd, rgb=bg)
+                lwd=path@lwd, lty=path@lty, rgb=bg)
         }
     } else {
         new("PictureStroke",
             x=c(path@x, path@x[1]),
             y=c(path@y, path@y[1]),
             # Use a light stroke
-            lwd=0.25, rgb=path@rgb)
+            lwd=path@lwd, lty=path@lty, rgb=path@rgb)
     }
 }
 
@@ -121,6 +125,13 @@ setMethod("explode", signature(object="PictureChar"),
               paths <- explodePath(object, fill)
               np <- length(paths)
               if (np > 0) {
+                  # bg can be a named vector
+                  bgLetters <- names(bg)
+                  if (length(bgLetters) > 0) {
+                      letterBG <- bg[object@char]
+                      if (!is.na(letterBG))
+                          bg <- letterBG
+                  }
                   newpaths <- vector("list", np)
                   for (i in 1:np) {
                       newpaths[[i]] <- fixPath(paths[[i]], i, fill, bg)
@@ -130,6 +141,24 @@ setMethod("explode", signature(object="PictureChar"),
               paths
           })
 
+.bgText.default <- c(a="white",
+                     b="white",
+                     d="white",
+                     e="white",
+                     g="white",
+                     i="black",
+                     j="black",
+                     o="white",
+                     p="white",
+                     q="white",
+                     A="white",
+                     B="white",
+                     D="white",
+                     O="white",
+                     P="white",
+                     Q="white",
+                     R="white")
+                     
 ##################
 # Convert picture or path into single grob
 # For using picture as a one-off (e.g., plot background)
@@ -140,13 +169,28 @@ setGeneric("grobify",
                standardGeneric("grobify")
            })
 
+picLinesGrob <- function(...) {
+    grob(..., cl="picline")
+}
+
+drawDetails.picline <- function(x, recording) {
+    # Figure out what lwd and lty really are
+    lwd <- convertWidth(unit(x$lwd, "native"), "bigpts", valueOnly=TRUE)
+    lty <- fixLTY(x$lty, x$lwd)
+    grid.lines(x$x, x$y, x$default.units,
+               gp=gpar(lwd=lwd, lty=lty, col=x$col))
+}
+
 # Individual path converted into grob
 setMethod("grobify", signature(object="PictureStroke"),
-          function(object, ..., fillText, bgText, use.gc=TRUE) {
+          function(object, ..., fillText, bgText, sizeByWidth, use.gc=TRUE) {
               if (length(object@x) > 1) {
                   if (use.gc) {
-                      linesGrob(object@x, object@y, default.units="native",
-                                gp=gpar(lwd=object@lwd, col=object@rgb), ...)
+                      picLinesGrob(x=object@x, y=object@y,
+                                   default.units="native",
+                                   lwd=object@lwd,
+                                   lty=object@lty,
+                                   col=object@rgb, ...)
                   } else {
                       linesGrob(object@x, object@y,
                                 default.units="native", ...)
@@ -157,7 +201,7 @@ setMethod("grobify", signature(object="PictureStroke"),
           })
 
 setMethod("grobify", signature(object="PictureFill"),
-          function(object, ..., fillText, bgText, use.gc=TRUE) {
+          function(object, ..., fillText, bgText, sizeByWidth, use.gc=TRUE) {
               if (length(object@x) > 1) {
                   if (use.gc) {
                       polygonGrob(object@x, object@y, default.units="native",
@@ -172,21 +216,40 @@ setMethod("grobify", signature(object="PictureFill"),
           })
 
 setMethod("grobify", signature(object="PictureText"),
-          function(object, ..., fillText, bgText, use.gc=TRUE) {
-              if (use.gc) {
-                  pictureTextGrob(object@string,
-                                  object@x, object@y,
-                                  object@w, object@h,
-                                  gp=gpar(col=object@rgb), ...)
+          function(object, ..., fillText=FALSE, bgText=.bgText.default,
+                   sizeByWidth=TRUE, use.gc=TRUE) {
+              if (length(object@letters) == 0) {
+                  if (use.gc) {
+                      pictureTextGrob(object@string,
+                                      object@x, object@y,
+                                      object@w, object@h,
+                                      object@angle,
+                                      object@letters,
+                                      ...,
+                                      sizeByWidth=sizeByWidth,
+                                      gp=gpar(col=object@rgb))
+                  } else {
+                      pictureTextGrob(object@string,
+                                      object@x, object@y,
+                                      object@w, object@h,
+                                      object@angle,
+                                      object@letters,
+                                      ...,
+                                      sizeByWidth=sizeByWidth)
+                  }
               } else {
-                  pictureTextGrob(object@string,
-                                  object@x, object@y,
-                                  object@w, object@h, ...)
+                  gTree(string=as.character(object@string), 
+                        children=do.call("gList",
+                          lapply(object@letters, grobify, ...,
+                                 fillText=fillText, bgText=bgText,
+                                 sizeByWidth=sizeByWidth, use.gc=use.gc)),
+                        cl="pictureletters")
               }
           })
 
 setMethod("grobify", signature(object="PictureChar"),
-          function(object, ..., fillText=FALSE, bgText="white", use.gc=TRUE) {
+          function(object, ..., fillText=FALSE, bgText=.bgText.default,
+                   sizeByWidth=TRUE, use.gc=TRUE) {
               paths <- explode(object, fillText, bgText)
               do.call("gList", lapply(paths, grobify, ..., use.gc=use.gc))
           })
@@ -288,6 +351,7 @@ symbolLocn <- function(object, x, y, size, units,
         height <- sizeh
         width <- sizeh/scaleAspect
     }
+    lwd <- width*object@lwd/diff(rx)*72
     # Scale object@x/y to [-0.5, 0.5]
     # and then multiply by width/height
     wx <- rep((object@x - mean(rx))/abs(diff(rx)), n)*width
@@ -296,7 +360,7 @@ symbolLocn <- function(object, x, y, size, units,
     # NOTE object@x and object@y have same length
     xx <- rep(x, rep(length(object@x), n))
     yy <- rep(y, rep(length(object@x), n))
-    list(x=xx + wx, y=yy + hy, n=n)
+    list(x=xx + wx, y=yy + hy, n=n, lwd=lwd)
 }
 
 drawDetails.symbolStroke <- function(x, recording) {
@@ -306,10 +370,14 @@ drawDetails.symbolStroke <- function(x, recording) {
     id <- rep(1:locn$n, each=length(x$object@x))
     # Generate grob representing symbols
     if (x$use.gc) {
+        lwd <- locn$lwd
+        lty <- fixLTY(x$object@lty, x$object@lwd)
         do.call("grid.polyline",
                 c(list(x=locn$x, y=locn$y, id=id,
                        default.units="inches",
-                       gp=gpar(lwd=x$object@lwd, col=x$object@rgb)),
+                       gp=gpar(lwd=lwd,
+                         lty=lty,
+                         col=x$object@rgb)),
                   x$poly.args))
     } else {
         do.call("grid.polyline",

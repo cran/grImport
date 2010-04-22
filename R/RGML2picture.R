@@ -18,29 +18,49 @@ readPicture <- function(rgmlFile, ...) {
                       switch(funPathType(x),
                              stroke=new("PictureStroke", x=xval, y=yval,
                                lwd=as.numeric(gc$style["lwd"]),
+                               lty=readLTY(gc$style["lty"]),
                                rgb=rgb(as.numeric(gc$rgb["r"]),
                                  as.numeric(gc$rgb["g"]),
                                  as.numeric(gc$rgb["b"]))),
                              fill=new("PictureFill", x=xval, y=yval,
                                lwd=as.numeric(gc$style["lwd"]),
+                               lty=readLTY(gc$style["lty"]),
                                rgb=rgb(as.numeric(gc$rgb["r"]),
                                  as.numeric(gc$rgb["g"]),
                                  as.numeric(gc$rgb["b"]))),
                              char=new("PictureChar", x=xval, y=yval,
+                               char=xmlAttrs(x)["char"],
                                lwd=as.numeric(gc$style["lwd"]),
+                               lty=readLTY(gc$style["lty"]),
                                rgb=rgb(as.numeric(gc$rgb["r"]),
                                  as.numeric(gc$rgb["g"]),
                                  as.numeric(gc$rgb["b"]))))
                   },
-               text={ # get context
+               text={ xa <- xmlAttrs(x)
+                   
+                      # get context
                       gc = funGetGC(xmlElementsByTagName(x, "context")[[1]])
 
+                      type = xa["type"]
+
+                      if (type == "text") {
+                          letters = list()
+                      } else {
+                          # list of PictureChar or PictureText
+                          letters = xmlApply(x, funPath)
+                          cntxt = which(names(letters) == "context")
+                          letters = letters[-cntxt]
+                      }
+                      
                       new("PictureText",
-                          string=xmlAttrs(x)["string"],
-                          x=as.numeric(xmlAttrs(x)["x"]),
-                          y=as.numeric(xmlAttrs(x)["y"]),
-                          w=as.numeric(xmlAttrs(x)["width"]),
-                          h=as.numeric(xmlAttrs(x)["height"]),
+                          string=xa["string"],
+                          x=as.numeric(xa["x"]),
+                          y=as.numeric(xa["y"]),
+                          w=as.numeric(xa["width"]),
+                          h=as.numeric(xa["height"]),
+                          bbox=as.numeric(strsplit(xa["bbox"], " ")[[1]]),
+                          angle=as.numeric(xa["angle"]),
+                          letters=letters,
                           lwd=as.numeric(gc$style["lwd"]),
                           rgb=rgb(as.numeric(gc$rgb["r"]),
                             as.numeric(gc$rgb["g"]),
@@ -54,31 +74,41 @@ readPicture <- function(rgmlFile, ...) {
 
     xmlDoc = xmlTreeParse(rgmlFile, ...)
     version <- as.numeric(xmlAttrs(xmlRoot(xmlDoc))["version"])
-    if (version != 2)
+    if (version != 3)
         stop(paste("Version mismatch:",
                    "RGML file needs to be recreated with PostScriptTrace()"))
     RGMLlist <- xmlApply(xmlRoot(xmlDoc), funPath)
     new("Picture",
         paths=RGMLlist[-length(RGMLlist)],
         summary=new("PictureSummary",
-          numPaths=RGMLlist$summary["count"],
+          numPaths=length(RGMLlist) - 1, # RGMLlist$summary["count"],
           xscale=RGMLlist$summary[c("xmin", "xmax")],
           yscale=RGMLlist$summary[c("ymin", "ymax")]))
 }
 
 # Given a list of paths, determine the bounding box
 pathBounds <- function(paths) {
-    pathXmin <- function(path) { min(path@x) }
-    pathYmin <- function(path) { min(path@y) }
+    pathXmin <- function(path) {
+        if (is(path, "PictureText"))
+            path@bbox[1]
+        else
+            min(path@x)
+    }
+    pathYmin <- function(path) {
+        if (is(path, "PictureText"))
+            path@bbox[2]
+        else 
+            min(path@y)
+    }
     pathXmax <- function(path) {
         if (is(path, "PictureText"))
-            path@x + path@w
+            path@bbox[3]
         else
             max(path@x)
     }
     pathYmax <- function(path) {
         if (is(path, "PictureText"))
-            path@y + path@h
+            path@bbox[4]
         else
             max(path@y)
     }
@@ -98,6 +128,26 @@ setMethod("[", "Picture",
                     numPaths=length(paths),
                     xscale=scales$xscale,
                     yscale=scales$yscale))
+          })
+
+setMethod("[[", "Picture",
+          function(x, i, j, drop) {
+              if (length(i) > 1)
+                  stop("Index must be length 1")
+              path <- x@paths[[i]]
+              if (is(path, "PictureText") &&
+                  length(path@letters) > 0) {
+                  paths <- path@letters
+                  scales <- pathBounds(paths)
+                  new("Picture",
+                      paths=paths,
+                      summary=new("PictureSummary",
+                        numPaths=length(paths),
+                        xscale=scales$xscale,
+                        yscale=scales$yscale))
+              } else {
+                  x[i]
+              }
           })
 
 

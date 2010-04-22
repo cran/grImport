@@ -4,6 +4,7 @@ setClass("PictureOp",
          representation(x="numeric",
                         y="numeric",
                         rgb="character",
+                        lty="numeric",
                         lwd="numeric"),
          prototype=list(rgb="black", lwd=1))
 
@@ -17,10 +18,14 @@ setClass("PictureText",
          representation("PictureOp",
                         string="character",
                         w="numeric",
-                        h="numeric"))
+                        h="numeric",
+                        bbox="numeric",
+                        angle="numeric",
+                        letters="list"))
 
 setClass("PictureChar",
-         representation("PictureOp"))
+         representation("PictureOp",
+                        char="character"))
 
 setClass("PictureSummary",
          representation(numPaths="numeric",
