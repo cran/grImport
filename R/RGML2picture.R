@@ -1,6 +1,6 @@
 
 # Create a list straight from the RGML file
-readPicture <- function(rgmlFile, ...) {
+readPicture <- function(rgmlFile, tidy=TRUE, ...) {
     funGetX = function(x) { as.numeric(xmlAttrs(x)["x"]) }
     funGetY = function(x) { as.numeric(xmlAttrs(x)["y"]) }
     funGetGC = function(x) { pars <- xmlApply(x, xmlAttrs) }
@@ -23,6 +23,14 @@ readPicture <- function(rgmlFile, ...) {
                                  as.numeric(gc$rgb["g"]),
                                  as.numeric(gc$rgb["b"]))),
                              fill=new("PictureFill", x=xval, y=yval,
+                               rule="nonzero",
+                               lwd=as.numeric(gc$style["lwd"]),
+                               lty=readLTY(gc$style["lty"]),
+                               rgb=rgb(as.numeric(gc$rgb["r"]),
+                                 as.numeric(gc$rgb["g"]),
+                                 as.numeric(gc$rgb["b"]))),
+                             eofill=new("PictureFill", x=xval, y=yval,
+                               rule="evenodd",
                                lwd=as.numeric(gc$style["lwd"]),
                                lty=readLTY(gc$style["lty"]),
                                rgb=rgb(as.numeric(gc$rgb["r"]),
@@ -53,7 +61,11 @@ readPicture <- function(rgmlFile, ...) {
                       }
                       
                       new("PictureText",
-                          string=xa["string"],
+                          string=
+                            if (tidy)
+                              tidyString(xa["string"])
+                            else
+                              xa["string"],
                           x=as.numeric(xa["x"]),
                           y=as.numeric(xa["y"]),
                           w=as.numeric(xa["width"]),
