@@ -166,7 +166,14 @@ PScaptureHead <- function(file, charpath, charpos, setflat, encoding) {
       
       # echoing graphics state
       "/printcol {",
-      "  currentrgbcolor",
+      # What colorspace are we in?
+      # Return colorspace array and extract
+      # first element which is colorspace name
+      "  currentcolorspace 0 get",
+      # If it's DeviceRGB or DeviceGray or DeviceCMYK we're ok
+      # otherwise we "hail mary" and hope that currencolor throws back 3 values
+      # that can be interpreted as RGB (e.g., R's sRGB!)
+      "  dup (DeviceGray) eq exch dup (DeviceRGB) eq exch (DeviceCMYK) eq or or {currentrgbcolor} {currentcolor} ifelse",
       "  (\t\t<rgb) print",
       # make sure the colour is RGB not BGR
       "  ( r=') print 2 index str cvs print (') print",
@@ -687,7 +694,7 @@ postProcess <- function(outfilename, enc) {
               sep="")
     }
     # The XML file has been created by ghostscript in ISO-8859-1
-    infile <- file(outfilename, "r", enc="ISO-8859-1")
+    infile <- file(outfilename, "r", encoding="ISO-8859-1")
     lines <- readLines(infile)
     close(infile)
     # All string values have been marked 
