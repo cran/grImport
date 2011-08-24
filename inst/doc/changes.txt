@@ -1,4 +1,23 @@
-Changes from version 0.7 to 0.7-3
+Changes from version 0.7-4 to 0.8
+===============================
+
+1.  Added support for /xshow, /yshow, and /xyshow
+    (fine-tuned positioning of text)
+
+2.  Small fix for case where import generates char paths
+    from text that consists of only a moveto 
+    (e.g., text is only a space character).
+
+3.  Ability to cope with "Separation" colorspace
+    (actually just some defensive code so that PostScriptTrace()
+     does not fall over;  just sets the colour to "black").
+
+4.  Extraction of font information is more robust 
+    (checks whether information is actually there before
+     trying to extract it!).
+
+
+Changes from version 0.7 to 0.7-4
 ===============================
 
 1.  Fix warning in vignettes.
@@ -10,6 +29,10 @@ Changes from version 0.7 to 0.7-3
     Reported by Al Roark.
 
 3.  Fixed bug in vignette "import" in Figure 20.
+
+4.  Fixed bug in grid.symbols() so that it handles vector 'size'.
+
+    Problem reported by Baptiste Auguie.
 
 
 Changes from version 0.6-4 to 0.7
