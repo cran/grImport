@@ -1,7 +1,7 @@
-d7c1950ed12eb127ca4604184f77f3c5 *DESCRIPTION
+5b7c67f06b44319f0a1deadd63219600 *DESCRIPTION
 88a1973a881874d511f9cd6868603865 *NAMESPACE
 ee039cfba80cc8eb7ed603058abe42c7 *R/AllClasses.R
-3d4351ef923020af66c76bf95dc24906 *R/PostScript2RGML.R
+e39440e5b5914259f6db86d93fe44af7 *R/PostScript2RGML.R
 cdcb8e2c9b2586965732a2adbbec8b21 *R/RGML2picture.R
 1f7611590ef914ab484bce143a7bf6d6 *R/picture2graphics.R
 18872c84301a33402e26a1626c0a9ba7 *R/picture2grid.R
@@ -17,10 +17,10 @@ af0de7d8319fb21bede01b5deb318532 *inst/doc/blueify.R
 b9ff69b146cff1cc6b465fd307a8325e *inst/doc/changes.txt
 9f23987077974a6dac04c5432cf96554 *inst/doc/chess_game_01.fromInkscape.eps
 d564cd0a5b207b30d2920cf7fb3595e1 *inst/doc/chessmod.txt
-b93a01f81dedc473ba367d94b86bd611 *inst/doc/circleRas.pdf
+e9ae9f1ea0622cb4ef73348adb04b65e *inst/doc/circleRas.pdf
 beb8c8bda6968ffae13ed8e6766a5dcb *inst/doc/circleVec.pdf
 314644e53da613c574b32eae3480d2c3 *inst/doc/convert.ps
-7a2ed05e2fef74c2e50974c2b1ab63ac *inst/doc/fiddledplot.pdf
+2e6daed3207e64e2653a2ccf525d6bee *inst/doc/fiddledplot.pdf
 4c456ddbb87c3534efb83de1c6106d68 *inst/doc/fillrule.pdf
 264b98faa1b2cf21fd90d1fb6bbe0e6b *inst/doc/flower.ps
 10268c432d61d7ec4c79372caee4a804 *inst/doc/hello.pdf
@@ -29,9 +29,9 @@ f9caed499da8361d1fd646119e3bb2e0 *inst/doc/helloBBox.ps
 a1dab8ef37603433d4a7ad598fb70cef *inst/doc/helloclip.pdf
 d682806900f6c2332efe44f5b1b12e78 *inst/doc/import.Rnw
 3559c6056fb365cd95886d7b726bdc05 *inst/doc/import.bib
-489c6c97aa896f8402b84b697cdc1bc7 *inst/doc/import.pdf
+c12e005ba19cf56604217bb6fb97a4ce *inst/doc/import.pdf
 65f5f3aee0c0ef454dd974b06a30dd50 *inst/doc/importText.Rnw
-6a0be2287952c492af014c2554ce976e *inst/doc/importText.pdf
+be8909dbefa1bb58b30ff3a31a3f3f5b *inst/doc/importText.pdf
 92e903f33d4067a7fbc89fa4e7571c92 *inst/doc/jss.bst
 597d284e5204836c015463ad73e972ab *inst/doc/jss.cls
 a0153a1db36101c2e337be19036ffa9e *inst/doc/page27.ps
@@ -39,9 +39,11 @@ a0153a1db36101c2e337be19036ffa9e *inst/doc/page27.ps
 1bb7c2ffc1be29dbe2c9fb9e9272b352 *inst/doc/petal.ps
 83b35eb8bb0d7417b6367deae1c3068f *inst/doc/seqlogo.pdf
 b0f1678ed18bc9f1ce834dea3c81f9d1 *inst/doc/tiger.ps
-2bc96137b1420dcd22a2696990843373 *inst/doc/todo.txt
+beaedffb328f4bf459588f4d1439650d *inst/doc/todo.txt
 49b7dd71b10ae77ff960f90150c49390 *inst/dtd/rgml.dtd
 f2c2df583596264735565ce6b6cd248b *inst/dtd/rgml.xsd
+9fe1af53af5307ae5c4e589386bdd77d *inst/xsl/svg2rgml.xsl
+bd69a7b7d236a5e91e04c79d320d4add *inst/xsl/xsl.R
 042ac87fc10db42e32f2a01635852f31 *man/Picture-class.Rd
 5f2e05bf9942fb33bd67a56b85f2f865 *man/PictureChar-class.Rd
 84e809c7f331c393d22c6f030715fb07 *man/PictureFill-class.Rd
