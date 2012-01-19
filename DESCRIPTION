@@ -1,5 +1,5 @@
 Package: grImport
-Version: 0.8-2
+Version: 0.8-3
 Depends: R (>= 2.12.0), methods, grid, XML
 Suggests: lattice, cluster, colorspace, survival
 SystemRequirements: ghostscript
@@ -9,6 +9,6 @@ Maintainer: Paul Murrell <p.murrell@auckland.ac.nz>
 Description: Functions for converting, importing, and drawing
         PostScript pictures in R plots.
 License: GPL (>= 2)
-Packaged: 2012-01-10 02:41:11 UTC; pmur002
+Packaged: 2012-01-19 23:17:13 UTC; pmur002
 Repository: CRAN
-Date/Publication: 2012-01-11 07:02:34
+Date/Publication: 2012-01-20 06:49:57
