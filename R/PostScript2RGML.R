@@ -171,11 +171,11 @@ PScaptureHead <- function(file, charpath, charpos, setflat, encoding) {
       # first element which is colorspace name
       "  currentcolorspace 0 get",
       # If it's DeviceRGB or DeviceGray or DeviceCMYK we're ok
-      # Separation is a special case that is currently handled
-      # by just specifying "black" as the colour
+      # Separation and Pattern are special cases that are currently handled
+      # by just specifying "grey" as the colour
       # Otherwise we "hail mary" and hope that currencolor throws back 3 values
       # that can be interpreted as RGB (e.g., R's sRGB!)
-      "  dup (Separation) eq {pop 0 0 0} {dup (DeviceGray) eq exch dup (DeviceRGB) eq exch (DeviceCMYK) eq or or {currentrgbcolor} {currentcolor} ifelse} ifelse",
+      "  dup dup (Separation) eq exch (Pattern) eq or {pop 0.5 0.5 0.5} {dup (DeviceGray) eq exch dup (DeviceRGB) eq exch (DeviceCMYK) eq or or {currentrgbcolor} {currentcolor} ifelse} ifelse",
       "  (\t\t<rgb) print",
       # make sure the colour is RGB not BGR
       "  ( r=') print 2 index str cvs print (') print",
@@ -187,9 +187,23 @@ PScaptureHead <- function(file, charpath, charpos, setflat, encoding) {
       "/printlwd {",
       # lwd is in user coords so transform
       # This will need transforming to a grDevices "lwd" in R
-      "  currentlinewidth 0 transform pop",
-      "  0 0 transform pop sub",
+      "  currentlinewidth 0 transform",
+      "  0 0 transform",
+      "  3 index 2 index sub", # dx
+      "  3 index 2 index sub", # dy
+      "  2 exp exch 2 exp add sqrt",      
+      # clean up
+      "  5 1 roll pop pop pop pop",
       "  ( lwd=') print str cvs print (') print",
+      "} def",
+      "/printlineend {",
+      "  ( lineend=') print currentlinecap str cvs print (') print",
+      "} def",
+      "/printlinejoin {",
+      "  ( linejoin=') print currentlinejoin str cvs print (') print",
+      "} def",
+      "/printlinemiter {",
+      "  ( linemitre=') print currentmiterlimit str cvs print (') print",
       "} def",
       "/printdash {",
       "  currentdash",
@@ -201,6 +215,9 @@ PScaptureHead <- function(file, charpath, charpos, setflat, encoding) {
       "  (\t\t<style) print",
       "  printlwd",
       "  printdash",
+      "  printlineend",
+      "  printlinemiter",
+      "  printlinejoin",
       "  (/>\n) print",
       "} def",
 
@@ -366,6 +383,36 @@ PScaptureHead <- function(file, charpath, charpos, setflat, encoding) {
       "  flattenpath {mymove} {myline} {mycurve} {myclose}",
       "  myeofill",
       "  newpath",
+      "} def",
+
+      # Turn rectangles into paths
+      "/rectfill {",
+      "  4 dict begin",
+      "  /rheight exch def",
+      "  /rwidth exch def",
+      "  /rx exch def",
+      "  /ry exch def",
+      "  rx ry moveto",
+      "  rwidth 0 rlineto",
+      "  0 rheight rlineto",
+      "  rwidth neg 0 rlineto",
+      "  end",
+      "  closepath",
+      "  fill",
+      "} def",
+      "/rectstroke {",
+      "  4 dict begin",
+      "  /rheight exch def",
+      "  /rwidth exch def",
+      "  /rx exch def",
+      "  /ry exch def",
+      "  rx ry moveto",
+      "  rwidth 0 rlineto",
+      "  0 rheight rlineto",
+      "  rwidth neg 0 rlineto",
+      "  end",
+      "  closepath",
+      "  stroke",
       "} def",
 
       # text is split into individual characters
@@ -962,7 +1009,7 @@ processNUL <- function(filename, linenum) {
 # above PostScript code.
 # (e.g., do some character escaping that would be more painful to do
 #  in PostScript code)
-postProcess <- function(outfilename, enc) {
+postProcess <- function(outfilename, enc, defaultcol) {
     processStringLine <- function(stringLine) {
         paste(stringLine[1],
               gsub("<", "&lt;",
@@ -1001,7 +1048,7 @@ postProcess <- function(outfilename, enc) {
 # Generate RGML file from PostScript file
 PostScriptTrace <- function(file, outfilename,
                             charpath=TRUE, charpos=FALSE,
-                            setflat=NULL,
+                            setflat=NULL, defaultcol="black",
                             encoding="ISO-8859-1") {
     # Create temporary PostScript file which loads
     # dictionary redefining stroke and fill operators
@@ -1022,22 +1069,28 @@ PostScriptTrace <- function(file, outfilename,
     }
     
     # Run temp file using ghostscript
-    gscmd <- Sys.getenv("R_GSCMD")
-    if(is.null(gscmd) || !nzchar(gscmd)) {
-        gscmd <- switch(.Platform$OS.type,
-                        unix = "gs",
-                        windows = {
-                            poss <- Sys.which(c("gswin64c.exe",
-                                                "gswin32c.exe"))
-                            poss <- poss[nzchar(poss)]
-                            gscmd <- if (length(poss)) poss else "gswin32c.exe"
-                        })
+    # Determination of ghostscript command syntax derived from dev2bitmap()
+    gsexe <- Sys.getenv("R_GSCMD")
+    if (.Platform$OS.type == "windows") {
+        if(!nzchar(gsexe)) gsexe <- Sys.getenv("GSC")
+        if(is.null(gsexe) || !nzchar(gsexe)) {
+            poss <- Sys.which(c("gswin64c.exe", "gswin32c.exe"))
+            poss <- poss[nzchar(poss)]
+            gsexe <- if(length(poss)) poss else "gswin32c.exe"
+        } else if(grepl(" ", gsexe, fixed = TRUE))
+            gsexe <- shortPathName(gsexe)
+        outfile <- tempfile()
+    } else {
+        if (is.null(gsexe) || !nzchar(gsexe)) {
+            gsexe <- "gs"
+            rc <- system(paste(shQuote(gsexe), "-help > /dev/null"))
+            if (rc != 0) 
+                stop("sorry, 'gs' cannot be found")
+        }
+        outfile <- "/dev/null"
     }
-    outfile <- switch(.Platform$OS.type,
-                      unix = "/dev/null",
-                      windows = tempfile())
-    cmd <- paste(gscmd, 
-                 " -q -dBATCH -dNOPAUSE -sDEVICE=pswrite -sOutputFile=",
+    cmd <- paste(gsexe, 
+                 " -q -dBATCH -dNOPAUSE -sDEVICE=ps2write -sOutputFile=",
                  outfile, " -sstdout=",
                  outfilename, " ",
                  psfilename, sep="")
@@ -1048,7 +1101,7 @@ PostScriptTrace <- function(file, outfilename,
         stop(gettextf("status %d in running command '%s'", ret, cmd),
              domain = NA)
     } else {
-        postProcess(outfilename, encoding)
+        postProcess(outfilename, encoding, defaultcol)
     }
     invisible(cmd)
 }
