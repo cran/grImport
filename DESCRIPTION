@@ -1,6 +1,6 @@
 Package: grImport
-Version: 0.9-0
-Depends: R (>= 3.0.0), methods, grid, XML
+Version: 0.9-1
+Depends: R (>= 3.0.0), methods, grDevices, graphics, grid, XML
 Suggests: lattice, cluster, colorspace, survival
 SystemRequirements: ghostscript
 Title: Importing Vector Graphics
@@ -11,11 +11,11 @@ Authors@R: c(person("Paul", "Murrell", role = c("aut", "cre"),
 Description: Functions for converting, importing, and drawing PostScript 
               pictures in R plots.
 License: GPL (>= 2)
-Packaged: 2013-12-11 19:57:52 UTC; ripley
+NeedsCompilation: no
+Packaged: 2018-06-18 21:24:48 UTC; pmur002
 Author: Paul Murrell [aut, cre],
   Richard Walton [aut],
   Simon Potter [ctb]
 Maintainer: Paul Murrell <p.murrell@auckland.ac.nz>
-NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2013-12-11 20:59:51
+Date/Publication: 2018-06-18 21:57:57 UTC
