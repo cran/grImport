@@ -1,4 +1,4 @@
-7466c8b077d8eae3c3bb11467d9ca560 *DESCRIPTION
+2eff148a283058e88311f37e138f3d88 *DESCRIPTION
 a6c259e1829dacce8dc03460d4152da8 *NAMESPACE
 c8496ed0598151781b3943b106e3d316 *R/AllClasses.R
 1b2dd93cd85e47e50b3d7690ab4c6ded *R/PostScript2RGML.R
@@ -7,15 +7,15 @@ c8496ed0598151781b3943b106e3d316 *R/AllClasses.R
 7fa2d482615d0e9b40b3f09c46e10351 *R/picture2grid.R
 6e0b0807ec16817f33ed8a2813998367 *R/picturetext.R
 c23166bb25d631abc9ed09eeacba6289 *R/util.R
-e80637c766924355c8d10d0b7934fad9 *build/vignette.rds
-8128f7cbcdd6690db2e492b67dd6f8d5 *inst/CITATION
-2f09e92ce26892422f8e5317f7c32989 *inst/doc/changes.txt
+9891d76a590de4e03b7e321b1873bda6 *build/vignette.rds
+a9ed40e05d207c87fbeb4e4bbfe162a9 *inst/CITATION
+8c399192384d13c7b12f57b81f71a8c5 *inst/doc/changes.txt
 c545dc38441c43d5c061a79a6bfa6427 *inst/doc/import.R
 f9346928095238aa602834e01b302e86 *inst/doc/import.Rnw
-8f97b94b24eff5f2e29e5b6b74d23398 *inst/doc/import.pdf
+c3fe385db5e98fdc89162292f4d7e647 *inst/doc/import.pdf
 3973cb3ec935d03ef3d5dd575c71c93b *inst/doc/importText.R
 f2941acd5dff6d915a122239bae3da3f *inst/doc/importText.Rnw
-f755bce4cad4298c2aa20ec1dd9b70e6 *inst/doc/importText.pdf
+a3144c1512057cf5c5a6f1a1103fc3f9 *inst/doc/importText.pdf
 beaedffb328f4bf459588f4d1439650d *inst/doc/todo.txt
 49b7dd71b10ae77ff960f90150c49390 *inst/dtd/rgml.dtd
 f2c2df583596264735565ce6b6cd248b *inst/dtd/rgml.xsd
@@ -26,7 +26,7 @@ f2c2df583596264735565ce6b6cd248b *inst/dtd/rgml.xsd
 a395ecf6c3c6d69b1ebe39570985823e *man/PictureStroke-class.Rd
 bad231d47a6e0b398d806d9b1674205e *man/PictureSummary-class.Rd
 597b11fff6991011d805beb3a597c604 *man/PictureText-class.Rd
-7fede0b7be47fdde6f6ec550fd16ca50 *man/PostScriptTrace.Rd
+f542b5448906272c3b7a062e10b83907 *man/PostScriptTrace.Rd
 e4d74b7635962decb3cc52b83d33939c *man/drawPath.Rd
 015674b41f26acb163ed460b916de333 *man/explodePaths.Rd
 ee21f6cbbdf80690b7653b78b2bc04c2 *man/grid.picture.Rd
