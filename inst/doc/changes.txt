@@ -1,4 +1,20 @@
 
+Changes from version 0.9-6 to 0.9-7
+===================================
+
+1.  Make search for and call to 'gsexe' more robust.
+
+    Thanks to Tomas Kalibera for report and patch.
+
+
+Changes from version 0.9-4 to 0.9-6
+===================================
+
+1.  Tweak to make robust changes to PostScriptTrace() more efficient.
+
+    Thanks again to Harold Gutch.
+
+
 Changes from version 0.9-4 to 0.9-5
 ===================================
 

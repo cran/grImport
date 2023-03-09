@@ -175,8 +175,6 @@ PScaptureHead <- function(file, charpath, charpos, setflat, encoding,
       
       # echoing graphics state
       "/printcol {",
-      "  1 dict begin",
-      "  /str 50 string def",
       # What colorspace are we in?
       # Return colorspace array and extract
       # first element which is colorspace name
@@ -194,7 +192,6 @@ PScaptureHead <- function(file, charpath, charpos, setflat, encoding,
       "  ( b=') print str cvs print (') print",
       "  (/>\n) print",
       "  pop pop",
-      "  end",
       "  } def",
       "/printlwd {",
       # lwd is in user coords so transform
@@ -224,8 +221,6 @@ PScaptureHead <- function(file, charpath, charpos, setflat, encoding,
       "  ( lty=') print pop {0 transform pop 0 0 transform pop sub str cvs print ( ) print} forall (') print",
       "} def",      
       "/printstyle {",
-      "  1 dict begin",
-      "  /str 50 string def",
       "  (\t\t<style) print",
       "  printlwd",
       "  printdash",
@@ -233,7 +228,6 @@ PScaptureHead <- function(file, charpath, charpos, setflat, encoding,
       "  printlinemiter",
       "  printlinejoin",
       "  (/>\n) print",
-      "  end",
       "} def",
 
       # print out "closestroke" marker plus graphics state info
@@ -1145,7 +1139,7 @@ PostScriptTrace <- function(file, outfilename,
         if(is.null(gsexe) || !nzchar(gsexe)) {
             poss <- Sys.which(c("gswin64c.exe", "gswin32c.exe"))
             poss <- poss[nzchar(poss)]
-            gsexe <- if(length(poss)) poss else "gswin32c.exe"
+            gsexe <- if(length(poss)) poss[1] else "gswin32c.exe"
         } else if(grepl(" ", gsexe, fixed = TRUE))
             gsexe <- utils::shortPathName(gsexe)
         outfile <- tempfile()
@@ -1158,7 +1152,7 @@ PostScriptTrace <- function(file, outfilename,
         }
         outfile <- "/dev/null"
     }
-    cmd <- paste(gsexe, 
+    cmd <- paste(shQuote(gsexe), 
                  " -q -dBATCH -dNOPAUSE -dNOSAFER",
                  " -sDEVICE=ps2write -sOutputFile=",
                  outfile, " -sstdout=",
